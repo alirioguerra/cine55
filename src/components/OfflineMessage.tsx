@@ -1,16 +1,19 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface OfflineMessageProps {
   visible: boolean;
 }
 
 export const OfflineMessage: React.FC<OfflineMessageProps> = ({ visible }) => {
+  const insets = useSafeAreaInsets();
+
   if (!visible) return null;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { top: insets.top }]}>
       <Ionicons name="wifi-outline" size={20} color="#fff" />
       <Text style={styles.text}>Sem conexão com a internet</Text>
     </View>
@@ -19,16 +22,11 @@ export const OfflineMessage: React.FC<OfflineMessageProps> = ({ visible }) => {
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
+    position: 'static',
     backgroundColor: '#14171F',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
     zIndex: 1000,
   },
   text: {
@@ -37,4 +35,4 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginLeft: 8,
   },
-}); 
+});

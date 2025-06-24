@@ -19,7 +19,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider style={{ backgroundColor: '#14171F' }}>
-        <StatusBar style="light" backgroundColor="#14171F" />
+        <StatusBar style="light" translucent backgroundColor="transparent" />
         <AppNavigator />
       </SafeAreaProvider>
     </QueryClientProvider>

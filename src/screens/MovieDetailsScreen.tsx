@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { MovieDetailsScreenNavigationProp, MovieDetailsScreenRouteProp } from '../types/navigation';
-import { Movie, UserReview } from '../types/movie';
+import { UserReview } from '../types/movie';
 import { MovieApiService } from '../utils/api';
 import { StorageService } from '../utils/storage';
 import { useMovieDetails } from '../composables/useMovies';
@@ -117,7 +117,7 @@ export const MovieDetailsScreen: React.FC<MovieDetailsScreenProps> = ({ navigati
   const backdropUrl = MovieApiService.getBackdropUrl(movie.backdrop_path);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <ScrollView>
         <View style={styles.header}>
           <Image source={{ uri: backdropUrl }} style={styles.backdrop} />
@@ -218,7 +218,7 @@ export const MovieDetailsScreen: React.FC<MovieDetailsScreenProps> = ({ navigati
           )}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
