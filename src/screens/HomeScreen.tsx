@@ -24,6 +24,7 @@ interface HomeScreenProps {
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [allMovies, setAllMovies] = useState<Movie[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState(searchQuery);
   const [selectedGenre, setSelectedGenre] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMorePages, setHasMorePages] = useState(true);
@@ -33,7 +34,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   // React Query hooks
   const { data: genresData } = useGenres();
   const { data: popularData, isLoading: popularLoading, refetch: refetchPopular } = usePopularMovies(currentPage);
-  const { data: searchData, isLoading: searchLoading } = useSearchMovies(searchQuery, currentPage);
+  const { data: searchData, isLoading: searchLoading } = useSearchMovies(debouncedQuery, currentPage);
   const { data: genreData, isLoading: genreLoading, refetch: refetchGenre } = useMoviesByGenre(selectedGenre, currentPage);
 
   // Determinar qual dados usar
@@ -78,6 +79,22 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     }
   }, [currentData, currentPage]);
 
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]);
+
+  useEffect(() => {
+    setAllMovies([]);
+    setCurrentPage(1);
+    setHasMorePages(true);
+  }, [debouncedQuery]);  
+
   // Resetar quando mudar gênero
   useEffect(() => {
     if (selectedGenre !== null) {
@@ -89,10 +106,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
-    // Resetar lista apenas quando a busca mudar completamente
-    setAllMovies([]);
-    setCurrentPage(1);
-    setHasMorePages(true);
   }, []);
 
   const handleGenreSelect = useCallback((genreId: number | null) => {
@@ -144,8 +157,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       <SearchBar 
         onSearch={handleSearch}
         value={searchQuery}
-        onValueChange={setSearchQuery}
+        onValueChange={handleSearch}
       />
+
       <GenreFilter
         genres={genresData?.genres || []}
         selectedGenre={selectedGenre}
