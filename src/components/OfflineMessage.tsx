@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,7 +7,7 @@ interface OfflineMessageProps {
   visible: boolean;
 }
 
-export const OfflineMessage: React.FC<OfflineMessageProps> = ({ visible }) => {
+const OfflineMessageComponent: React.FC<OfflineMessageProps> = ({ visible }) => {
   const insets = useSafeAreaInsets();
 
   if (!visible) return null;
@@ -19,6 +19,8 @@ export const OfflineMessage: React.FC<OfflineMessageProps> = ({ visible }) => {
     </View>
   );
 };
+
+export const OfflineMessage = memo(OfflineMessageComponent);
 
 const styles = StyleSheet.create({
   container: {

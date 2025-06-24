@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo, useCallback } from 'react';
 import {
   View,
   TextInput,
@@ -14,7 +14,7 @@ interface SearchBarProps {
   onValueChange?: (value: string) => void;
 }
 
-export const SearchBar: React.FC<SearchBarProps> = ({ 
+const SearchBarComponent: React.FC<SearchBarProps> = ({ 
   onSearch, 
   placeholder = 'Buscar filmes...',
   value,
@@ -25,14 +25,18 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const query = value !== undefined ? value : internalQuery;
   const setQuery = onValueChange || setInternalQuery;
 
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     onSearch(query);
-  };
+  }, [onSearch, query]);
 
-  const clearSearch = () => {
+  const clearSearch = useCallback(() => {
     setQuery('');
     onSearch('');
-  };
+  }, [setQuery, onSearch]);
+
+  const handleTextChange = useCallback((text: string) => {
+    setQuery(text);
+  }, [setQuery]);
 
   return (
     <View style={styles.container}>
@@ -41,7 +45,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         <TextInput
           style={styles.input}
           value={query}
-          onChangeText={setQuery}
+          onChangeText={handleTextChange}
           placeholder={placeholder}
           placeholderTextColor="#999"
           returnKeyType="search"
@@ -56,6 +60,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     </View>
   );
 };
+
+export const SearchBar = memo(SearchBarComponent);
 
 const styles = StyleSheet.create({
   container: {

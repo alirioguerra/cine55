@@ -41,7 +41,7 @@ export const MovieDetailsScreen: React.FC<MovieDetailsScreenProps> = ({ navigati
       const reviews = await StorageService.getReviewsByMovieId(initialMovie.id);
       setUserReviews(reviews);
     } catch (error) {
-      console.error('Error loading user reviews:', error);
+      console.error('Error loading user reviews:', String(error));
     }
   };
 
@@ -76,7 +76,7 @@ export const MovieDetailsScreen: React.FC<MovieDetailsScreenProps> = ({ navigati
       setUserComment('');
       Alert.alert('Sucesso', 'Sua avaliação foi salva!');
     } catch (error) {
-      console.error('Error saving review:', error);
+      console.error('Error saving review:', String(error));
       Alert.alert('Erro', 'Não foi possível salvar sua avaliação.');
     } finally {
       setSubmitting(false);

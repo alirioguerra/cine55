@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -18,15 +18,19 @@ interface MovieCardProps {
 const { width } = Dimensions.get('window');
 const cardWidth = (width - 48) / 2;
 
-export const MovieCard: React.FC<MovieCardProps> = ({ movie, onPress }) => {
+const MovieCardComponent: React.FC<MovieCardProps> = ({ movie, onPress }) => {
   const posterUrl = movie.poster_path 
     ? MovieApiService.getPosterUrl(movie.poster_path, 'w342')
     : null;
 
+  const handlePress = useCallback(() => {
+    onPress(movie);
+  }, [onPress, movie]);
+
   return (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => onPress(movie)}
+      onPress={handlePress}
       activeOpacity={0.7}
     >
       {posterUrl ? (
@@ -43,6 +47,8 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onPress }) => {
     </TouchableOpacity>
   );
 };
+
+export const MovieCard = memo(MovieCardComponent);
 
 const styles = StyleSheet.create({
   card: {

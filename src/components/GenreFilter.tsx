@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -14,11 +14,41 @@ interface GenreFilterProps {
   onGenreSelect: (genreId: number | null) => void;
 }
 
-export const GenreFilter: React.FC<GenreFilterProps> = ({
+const GenreFilterComponent: React.FC<GenreFilterProps> = ({
   genres,
   selectedGenre,
   onGenreSelect,
 }) => {
+  const handleGenreSelect = useCallback((genreId: number | null) => {
+    onGenreSelect(genreId);
+  }, [onGenreSelect]);
+
+  const renderGenreButton = useCallback((genre: Genre | null) => {
+    const genreId = genre?.id ?? null;
+    const genreName = genre?.name ?? 'Todos';
+    const isSelected = selectedGenre === genreId;
+
+    return (
+      <TouchableOpacity
+        key={genreId ?? 'all'}
+        style={[
+          styles.genreButton,
+          isSelected && styles.selectedGenre,
+        ]}
+        onPress={() => handleGenreSelect(genreId)}
+      >
+        <Text
+          style={[
+            styles.genreText,
+            isSelected && styles.selectedGenreText,
+          ]}
+        >
+          {genreName}
+        </Text>
+      </TouchableOpacity>
+    );
+  }, [selectedGenre, handleGenreSelect]);
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Gêneros</Text>
@@ -27,46 +57,14 @@ export const GenreFilter: React.FC<GenreFilterProps> = ({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        <TouchableOpacity
-          style={[
-            styles.genreButton,
-            selectedGenre === null && styles.selectedGenre,
-          ]}
-          onPress={() => onGenreSelect(null)}
-        >
-          <Text
-            style={[
-              styles.genreText,
-              selectedGenre === null && styles.selectedGenreText,
-            ]}
-          >
-            Todos
-          </Text>
-        </TouchableOpacity>
-        
-        {genres.map((genre) => (
-          <TouchableOpacity
-            key={genre.id}
-            style={[
-              styles.genreButton,
-              selectedGenre === genre.id && styles.selectedGenre,
-            ]}
-            onPress={() => onGenreSelect(genre.id)}
-          >
-            <Text
-              style={[
-                styles.genreText,
-                selectedGenre === genre.id && styles.selectedGenreText,
-              ]}
-            >
-              {genre.name}
-            </Text>
-          </TouchableOpacity>
-        ))}
+        {renderGenreButton(null)}
+        {genres.map((genre) => renderGenreButton(genre))}
       </ScrollView>
     </View>
   );
 };
+
+export const GenreFilter = memo(GenreFilterComponent);
 
 const styles = StyleSheet.create({
   container: {
