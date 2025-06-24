@@ -59,15 +59,37 @@ src/
    npm install
    ```
 
-3. **Execute o projeto**
+3. **Configure as variáveis de ambiente**
+   ```bash
+   # Copie o arquivo de exemplo
+   cp .env.example .env
+   
+   # Edite o arquivo .env e adicione sua chave da API
+   TMDB_API_KEY=sua_chave_api_aqui
+   ```
+
+4. **Execute o projeto**
    ```bash
    npm start
    ```
 
-4. **Abra no dispositivo/simulador**
+5. **Abra no dispositivo/simulador**
    - Use o Expo Go no seu dispositivo móvel
    - Ou pressione `i` para iOS Simulator
    - Ou pressione `a` para Android Emulator
+
+## 🔧 Configuração da API
+
+O projeto usa a API pública do TMDB. Para configurar sua própria chave da API:
+
+1. **Registre-se em [themoviedb.org](https://www.themoviedb.org/settings/api)**
+2. **Crie um arquivo `.env` na raiz do projeto**
+3. **Adicione sua chave da API:**
+   ```
+   TMDB_API_KEY=sua_chave_api_aqui
+   ```
+
+⚠️ **Importante**: O arquivo `.env` está no `.gitignore` para proteger sua chave da API. Nunca commite este arquivo no repositório.
 
 ## 📋 Checklist de Funcionalidades
 
@@ -79,6 +101,7 @@ src/
 - [x] Navegação com Stack Navigator
 - [x] Mensagem de Offline
 - [x] Persistência local das avaliações
+- [x] Configuração segura de variáveis de ambiente
 
 ## 🎨 Design e UX
 
@@ -88,13 +111,6 @@ src/
 - Sistema de avaliação com estrelas interativas
 - Feedback visual para ações do usuário
 - Suporte a modo offline
-
-## 🔧 Configuração da API
-
-O projeto usa a API pública do TMDB. A chave da API está configurada no arquivo `src/utils/api.ts`. Para usar sua própria chave:
-
-1. Registre-se em [themoviedb.org](https://www.themoviedb.org/settings/api)
-2. Substitua a `API_KEY` no arquivo `src/utils/api.ts`
 
 ## 📱 Compatibilidade
 

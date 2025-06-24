@@ -1,27 +1,28 @@
 import { Movie, MovieDetails, Genre, ApiResponse } from '../types/movie';
+import Constants from 'expo-constants';
 
 const API_BASE_URL = 'https://api.themoviedb.org/3';
-const API_KEY = 'fe4cfe1b5d9717e6dabf12a2b1d39630';
+const API_KEY = Constants.expoConfig?.extra?.apiKey;
 const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p';
+
+if (!API_KEY) {
+  throw new Error('TMDB_API_KEY environment variable is not set. Please check your .env file.');
+}
 
 export class MovieApiService {
   private static async fetchApi<T>(endpoint: string): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}&api_key=${API_KEY}&language=pt-BR`;
-    console.log('🌐 API Request:', url);
     
     try {
       const response = await fetch(url);
       
       if (!response.ok) {
-        console.error('❌ API Error:', response.status, response.statusText);
         throw new Error(`API request failed: ${response.status}`);
       }
       
       const data = await response.json();
-      console.log('✅ API Response:', endpoint, 'Results:', data.results?.length || 'N/A');
       return data;
     } catch (error) {
-      console.error('❌ Fetch Error:', error);
       throw error;
     }
   }
