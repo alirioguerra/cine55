@@ -122,6 +122,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       />
 
       <FlatList
+        key={`${searchQuery ? 'search' : 'default'}-${selectedGenre || 'all'}`}
         data={movies}
         keyExtractor={(item) => `${item.id}-${item.title}`}
         renderItem={renderMovie}

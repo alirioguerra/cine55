@@ -124,7 +124,10 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({ movieId }) => {
               <View style={styles.reviewHeader}>
                 {renderStars(review.rating)}
                 <Text style={styles.reviewDate}>
-                  {review.createdAt.toLocaleDateString('pt-BR')}
+                  {review.createdAt instanceof Date 
+                    ? review.createdAt.toLocaleDateString('pt-BR')
+                    : new Date(review.createdAt).toLocaleDateString('pt-BR')
+                  }
                 </Text>
               </View>
               <Text style={styles.reviewComment}>{review.comment}</Text>
