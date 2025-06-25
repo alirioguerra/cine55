@@ -17,9 +17,11 @@ export default {
       "**/*"
     ],
     ios: {
+      bundleIdentifier: "com.acervoapps.cine55",
       supportsTablet: true
     },
     android: {
+      package: "com.acervoapps.cine55",
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#ffffff"
@@ -31,7 +33,7 @@ export default {
     extra: {
       apiKey: process.env.TMDB_API_KEY,
       eas: {
-        projectId: "your-project-id"
+        projectId: "8b1a6bb0-aa1e-4748-b203-c974f4987968"
       }
     }
   }
