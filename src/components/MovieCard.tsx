@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Movie } from '../types/movie';
 import { MovieApiService } from '../utils/api';
+import { useTheme } from '../composables';
 
 interface MovieCardProps {
   movie: Movie;
@@ -19,6 +20,7 @@ const { width } = Dimensions.get('window');
 const cardWidth = (width - 48) / 2;
 
 const MovieCardComponent: React.FC<MovieCardProps> = ({ movie, onPress }) => {
+  const theme = useTheme();
   const posterUrl = movie.poster_path 
     ? MovieApiService.getPosterUrl(movie.poster_path, 'w342')
     : null;
@@ -29,7 +31,13 @@ const MovieCardComponent: React.FC<MovieCardProps> = ({ movie, onPress }) => {
 
   return (
     <TouchableOpacity
-      style={styles.card}
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.colors.card,
+          borderColor: theme.colors.border,
+        }
+      ]}
       onPress={handlePress}
       activeOpacity={0.7}
     >
@@ -40,8 +48,13 @@ const MovieCardComponent: React.FC<MovieCardProps> = ({ movie, onPress }) => {
           resizeMode="cover"
         />
       ) : (
-        <View style={styles.noPoster}>
-          <Text style={styles.noPosterText}>Sem imagem</Text>
+        <View style={[
+          styles.noPoster,
+          { backgroundColor: theme.colors.surfaceVariant }
+        ]}>
+          <Text style={[styles.noPosterText, { color: theme.colors.textSecondary }]}>
+            Sem imagem
+          </Text>
         </View>
       )}
     </TouchableOpacity>
@@ -53,9 +66,10 @@ export const MovieCard = memo(MovieCardComponent);
 const styles = StyleSheet.create({
   card: {
     width: cardWidth,
-    backgroundColor: '#fff',
     borderRadius: 12,
     marginBottom: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
   },
   poster: {
     width: '100%',
@@ -66,13 +80,11 @@ const styles = StyleSheet.create({
     width: '100%',
     height: cardWidth * 1.5,
     borderRadius: 12,
-    backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
   },
   noPosterText: {
     fontSize: 12,
-    color: '#999',
     textAlign: 'center',
   },
 }); 

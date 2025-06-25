@@ -7,6 +7,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Genre } from '../types/movie';
+import { useTheme } from '../composables';
 
 interface GenreFilterProps {
   genres: Genre[];
@@ -19,6 +20,8 @@ const GenreFilterComponent: React.FC<GenreFilterProps> = ({
   selectedGenre,
   onGenreSelect,
 }) => {
+  const theme = useTheme();
+
   const handleGenreSelect = useCallback((genreId: number | null) => {
     onGenreSelect(genreId);
   }, [onGenreSelect]);
@@ -33,6 +36,10 @@ const GenreFilterComponent: React.FC<GenreFilterProps> = ({
         key={genreId ?? 'all'}
         style={[
           styles.genreButton,
+          {
+            backgroundColor: isSelected ? theme.colors.primary : 'transparent',
+            borderColor: theme.colors.border,
+          },
           isSelected && styles.selectedGenre,
         ]}
         onPress={() => handleGenreSelect(genreId)}
@@ -40,6 +47,9 @@ const GenreFilterComponent: React.FC<GenreFilterProps> = ({
         <Text
           style={[
             styles.genreText,
+            {
+              color: isSelected ? '#FFFFFF' : theme.colors.text,
+            },
             isSelected && styles.selectedGenreText,
           ]}
         >
@@ -47,11 +57,11 @@ const GenreFilterComponent: React.FC<GenreFilterProps> = ({
         </Text>
       </TouchableOpacity>
     );
-  }, [selectedGenre, handleGenreSelect]);
+  }, [selectedGenre, handleGenreSelect, theme]);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Gêneros</Text>
+      <Text style={[styles.title, { color: theme.colors.text }]}>Gêneros</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -74,7 +84,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fff',
     marginBottom: 8,
     paddingHorizontal: 16,
   },
@@ -86,17 +95,15 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginRight: 8,
     borderRadius: 20,
-    backgroundColor: 'transparent',
+    borderWidth: 1,
   },
   selectedGenre: {
     backgroundColor: '#2D2D35',
   },
   genreText: {
     fontSize: 14,
-    color: '#fff',
   },
   selectedGenreText: {
-    color: '#fff',
     fontWeight: '600',
   },
 }); 

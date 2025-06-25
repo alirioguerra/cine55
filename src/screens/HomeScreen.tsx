@@ -14,8 +14,10 @@ import { SearchBar } from '../components/SearchBar';
 import { GenreFilter } from '../components/GenreFilter';
 import { OfflineMessage } from '../components/OfflineMessage';
 import { MovieCard } from '../components/MovieCard';
-import { useNetworkStatus } from '../composables/useNetworkStatus';
-import { usePopularMovies, useSearchMovies, useMoviesByGenre, useGenres } from '../composables/useMovies';
+import { ThemeToggle } from '../components/ThemeToggle';
+import { useNetworkStatus } from '../composables';
+import { usePopularMovies, useSearchMovies, useMoviesByGenre, useGenres } from '../composables';
+import { useTheme } from '../composables';
 
 interface HomeScreenProps {
   navigation: HomeScreenNavigationProp;
@@ -25,6 +27,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<number | null>(null);
   const isConnected = useNetworkStatus();
+  const theme = useTheme();
 
   const { data: genresData } = useGenres();
   const popularMovies = usePopularMovies();
@@ -63,8 +66,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     if (!isFetchingNextPage) return null;
     return (
       <View style={styles.loadingMore}>
-        <ActivityIndicator size="small" color="#007AFF" />
-        <Text style={styles.loadingMoreText}>Carregando mais...</Text>
+        <ActivityIndicator size="small" color={theme.colors.primary} />
+        <Text style={[styles.loadingMoreText, { color: theme.colors.text }]}>
+          Carregando mais...
+        </Text>
       </View>
     );
   };
@@ -73,8 +78,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     if (isLoading) {
       return (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
-          <Text style={styles.loadingText}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <Text style={[styles.loadingText, { color: theme.colors.text }]}>
             {searchQuery ? 'Buscando filmes...' : 'Carregando filmes...'}
           </Text>
         </View>
@@ -84,7 +89,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     if (isError) {
       return (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>
+          <Text style={[styles.emptyText, { color: theme.colors.text }]}>
             Erro ao carregar filmes. Tente novamente.
           </Text>
         </View>
@@ -93,7 +98,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>
+        <Text style={[styles.emptyText, { color: theme.colors.text }]}>
           {searchQuery ? 'Nenhum filme encontrado para sua busca.' : 'Nenhum filme disponível.'}
         </Text>
       </View>
@@ -101,12 +106,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <OfflineMessage visible={!isConnected} />
       
       <View style={styles.header}>
-        <Text style={styles.title}>Cine55</Text>
-        <Text style={styles.subtitle}>Descubra os melhores filmes</Text>
+        <View style={styles.headerTop}>
+          <View>
+            <Text style={[styles.title, { color: theme.colors.text }]}>Cine55</Text>
+            <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
+              Descubra os melhores filmes
+            </Text>
+          </View>
+          <ThemeToggle />
+        </View>
       </View>
 
       <SearchBar 
@@ -135,7 +147,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           <RefreshControl 
             refreshing={isLoading && !isFetchingNextPage} 
             onRefresh={refetch}
-            tintColor="#007AFF"
+            tintColor={theme.colors.primary}
           />
         }
         ListFooterComponent={renderFooter}
@@ -148,21 +160,23 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#14171F',
   },
   header: {
     paddingHorizontal: 16,
     paddingVertical: 16,
   },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#fff',
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 16,
-    color: '#fff',
   },
   row: {
     justifyContent: 'space-between',
@@ -180,7 +194,6 @@ const styles = StyleSheet.create({
   loadingMoreText: {
     marginLeft: 8,
     fontSize: 14,
-    color: '#fff',
   },
   emptyContainer: {
     flex: 1,
@@ -190,7 +203,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#fff',
     textAlign: 'center',
   },
   loadingContainer: {
@@ -201,7 +213,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#fff',
     textAlign: 'center',
   },
 }); 

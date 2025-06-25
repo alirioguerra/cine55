@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../composables';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -21,6 +22,7 @@ const SearchBarComponent: React.FC<SearchBarProps> = ({
   onValueChange
 }) => {
   const [internalQuery, setInternalQuery] = useState('');
+  const theme = useTheme();
 
   const query = value !== undefined ? value : internalQuery;
   const setQuery = onValueChange || setInternalQuery;
@@ -40,20 +42,38 @@ const SearchBarComponent: React.FC<SearchBarProps> = ({
 
   return (
     <View style={styles.container}>
-      <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
+      <View style={[
+        styles.searchContainer,
+        {
+          backgroundColor: theme.colors.surface,
+          borderColor: theme.colors.border,
+        }
+      ]}>
+        <Ionicons 
+          name="search" 
+          size={20} 
+          color={theme.colors.textSecondary} 
+          style={styles.searchIcon} 
+        />
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            { color: theme.colors.text }
+          ]}
           value={query}
           onChangeText={handleTextChange}
           placeholder={placeholder}
-          placeholderTextColor="#999"
+          placeholderTextColor={theme.colors.textTertiary}
           returnKeyType="search"
           onSubmitEditing={handleSubmit}
         />
         {query.length > 0 && (
           <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
-            <Ionicons name="close-circle" size={20} color="#666" />
+            <Ionicons 
+              name="close-circle" 
+              size={20} 
+              color={theme.colors.textSecondary} 
+            />
           </TouchableOpacity>
         )}
       </View>
@@ -71,10 +91,10 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2D2D35',
     borderRadius: 25,
     paddingHorizontal: 16,
     paddingVertical: 12,
+    borderWidth: 1,
   },
   searchIcon: {
     marginRight: 8,
@@ -82,7 +102,6 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    color: '#fff',
   },
   clearButton: {
     marginLeft: 8,

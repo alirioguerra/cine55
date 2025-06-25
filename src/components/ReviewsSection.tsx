@@ -11,6 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { UserReview } from '../types/movie';
 import { useReviewsStore } from '../store/reviewsStore';
+import { useTheme } from '../composables';
 
 interface ReviewsSectionProps {
   movieId: number;
@@ -20,6 +21,7 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({ movieId }) => {
   const [userRating, setUserRating] = useState(0);
   const [userComment, setUserComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const theme = useTheme();
 
   const { reviews, addReview, getReviewsByMovieId } = useReviewsStore();
   const userReviews = getReviewsByMovieId(movieId);
@@ -73,7 +75,7 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({ movieId }) => {
             <Ionicons
               name={star <= rating ? 'star' : 'star-outline'}
               size={20}
-              color={star <= rating ? '#FFD700' : '#ccc'}
+              color={star <= rating ? '#FFD700' : theme.colors.textTertiary}
               style={styles.star}
             />
           </TouchableOpacity>
@@ -84,18 +86,29 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({ movieId }) => {
 
   return (
     <View>
-      <View style={styles.reviewSection}>
-        <Text style={styles.sectionTitle}>Sua Avaliação</Text>
+      <View style={[
+        styles.reviewSection,
+        { backgroundColor: theme.colors.surface }
+      ]}>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Sua Avaliação</Text>
         
         <View style={styles.ratingSection}>
-          <Text style={styles.ratingLabel}>Nota:</Text>
+          <Text style={[styles.ratingLabel, { color: theme.colors.text }]}>Nota:</Text>
           {renderStars(userRating, true, handleRatingPress)}
-          <Text style={styles.ratingValue}>{userRating}/10</Text>
+          <Text style={[styles.ratingValue, { color: theme.colors.text }]}>{userRating}/10</Text>
         </View>
 
         <TextInput
-          style={styles.commentInput}
+          style={[
+            styles.commentInput,
+            {
+              borderColor: theme.colors.border,
+              color: theme.colors.text,
+              backgroundColor: theme.colors.surfaceVariant,
+            }
+          ]}
           placeholder="Escreva seu comentário..."
+          placeholderTextColor={theme.colors.textTertiary}
           value={userComment}
           onChangeText={setUserComment}
           multiline
@@ -104,12 +117,15 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({ movieId }) => {
         />
 
         <TouchableOpacity
-          style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
+          style={[
+            styles.submitButton,
+            { backgroundColor: submitting ? theme.colors.textTertiary : theme.colors.primary }
+          ]}
           onPress={handleSubmitReview}
           disabled={submitting}
         >
           {submitting ? (
-            <ActivityIndicator size="small" color="#fff" />
+            <ActivityIndicator size="small" color="#FFFFFF" />
           ) : (
             <Text style={styles.submitButtonText}>Enviar Avaliação</Text>
           )}
@@ -118,19 +134,22 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({ movieId }) => {
 
       {userReviews.length > 0 && (
         <View style={styles.communityReviews}>
-          <Text style={styles.sectionTitle}>Avaliações da Comunidade</Text>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Avaliações da Comunidade</Text>
           {userReviews.map((review) => (
-            <View key={review.id} style={styles.reviewItem}>
+            <View key={review.id} style={[
+              styles.reviewItem,
+              { backgroundColor: theme.colors.surface }
+            ]}>
               <View style={styles.reviewHeader}>
                 {renderStars(review.rating)}
-                <Text style={styles.reviewDate}>
+                <Text style={[styles.reviewDate, { color: theme.colors.textSecondary }]}>
                   {review.createdAt instanceof Date 
                     ? review.createdAt.toLocaleDateString('pt-BR')
                     : new Date(review.createdAt).toLocaleDateString('pt-BR')
                   }
                 </Text>
               </View>
-              <Text style={styles.reviewComment}>{review.comment}</Text>
+              <Text style={[styles.reviewComment, { color: theme.colors.text }]}>{review.comment}</Text>
             </View>
           ))}
         </View>
@@ -143,13 +162,11 @@ const styles = StyleSheet.create({
   reviewSection: {
     marginBottom: 24,
     padding: 16,
-    backgroundColor: '#2D2D35',
     borderRadius: 12,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#fff',
     marginBottom: 16,
   },
   ratingSection: {
@@ -159,7 +176,6 @@ const styles = StyleSheet.create({
   },
   ratingLabel: {
     fontSize: 16,
-    color: '#fff',
     marginRight: 12,
   },
   starsContainer: {
@@ -172,31 +188,23 @@ const styles = StyleSheet.create({
   ratingValue: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fff',
   },
   commentInput: {
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    color: '#fff',
-    backgroundColor: '#2D2D35',
     marginBottom: 16,
     minHeight: 100,
   },
   submitButton: {
-    backgroundColor: '#007AFF',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
     alignItems: 'center',
   },
-  submitButtonDisabled: {
-    backgroundColor: '#ccc',
-  },
   submitButtonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -204,7 +212,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   reviewItem: {
-    backgroundColor: '#2D2D35',
     padding: 16,
     borderRadius: 8,
     marginBottom: 12,
@@ -217,11 +224,9 @@ const styles = StyleSheet.create({
   },
   reviewDate: {
     fontSize: 12,
-    color: '#fff',
   },
   reviewComment: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#fff',
   },
 }); 

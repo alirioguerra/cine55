@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../composables';
 
 interface OfflineMessageProps {
   visible: boolean;
@@ -9,12 +10,19 @@ interface OfflineMessageProps {
 
 const OfflineMessageComponent: React.FC<OfflineMessageProps> = ({ visible }) => {
   const insets = useSafeAreaInsets();
+  const theme = useTheme();
 
   if (!visible) return null;
 
   return (
-    <View style={[styles.container, { top: insets.top }]}>
-      <Ionicons name="wifi-outline" size={20} color="#fff" />
+    <View style={[
+      styles.container, 
+      { 
+        top: insets.top,
+        backgroundColor: theme.colors.error,
+      }
+    ]}>
+      <Ionicons name="wifi-outline" size={20} color="#FFFFFF" />
       <Text style={styles.text}>Sem conexão com a internet</Text>
     </View>
   );
@@ -25,14 +33,14 @@ export const OfflineMessage = memo(OfflineMessageComponent);
 const styles = StyleSheet.create({
   container: {
     position: 'static',
-    backgroundColor: '#14171F',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1000,
+    paddingVertical: 8,
   },
   text: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '500',
     marginLeft: 8,

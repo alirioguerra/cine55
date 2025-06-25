@@ -12,8 +12,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { MovieDetailsScreenNavigationProp, MovieDetailsScreenRouteProp } from '../types/navigation';
 import { MovieApiService } from '../utils/api';
-import { useMovieDetails } from '../composables/useMovies';
+import { useMovieDetails } from '../composables';
 import { ReviewsSection } from '../components/ReviewsSection';
+import { useTheme } from '../composables';
+import { ThemeToggle } from '../components/ThemeToggle';
 
 interface MovieDetailsScreenProps {
   navigation: MovieDetailsScreenNavigationProp;
@@ -22,14 +24,15 @@ interface MovieDetailsScreenProps {
 
 export const MovieDetailsScreen: React.FC<MovieDetailsScreenProps> = ({ navigation, route }) => {
   const { movie: initialMovie } = route.params;
+  const theme = useTheme();
 
   const { data: movieDetails, isLoading } = useMovieDetails(initialMovie.id);
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loadingText}>Carregando detalhes...</Text>
+      <SafeAreaView style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <Text style={[styles.loadingText, { color: theme.colors.text }]}>Carregando detalhes...</Text>
       </SafeAreaView>
     );
   }
@@ -38,9 +41,9 @@ export const MovieDetailsScreen: React.FC<MovieDetailsScreenProps> = ({ navigati
   const backdropUrl = MovieApiService.getBackdropUrl(movie.backdrop_path);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <TouchableOpacity
-        style={styles.backButton}
+        style={[styles.backButton, { backgroundColor: theme.colors.backdrop }]}
         onPress={() => navigation.goBack()}
       >
         <Ionicons name="arrow-back" size={24} color="#fff" />
@@ -48,10 +51,15 @@ export const MovieDetailsScreen: React.FC<MovieDetailsScreenProps> = ({ navigati
 
       <ScrollView>
         <View style={styles.header}>
+          <View style={styles.themeToggleContainer}>
+            <ThemeToggle />
+          </View>
           <Image source={{ uri: backdropUrl }} style={styles.backdrop} />
-          <View style={styles.backdropOverlay} />
+          <View style={[styles.backdropOverlay, { backgroundColor: theme.colors.backdrop }]} />
 
           <View style={styles.headerContent}>
+            <View style={styles.themeToggleContainer}>
+            </View>
             <Image
               source={{ uri: MovieApiService.getPosterUrl(movie.poster_path) }}
               style={styles.poster}
@@ -63,7 +71,7 @@ export const MovieDetailsScreen: React.FC<MovieDetailsScreenProps> = ({ navigati
               </Text>
               <View style={styles.ratingContainer}>
                 <Text style={styles.ratingText}>⭐ {movie.vote_average.toFixed(1)}</Text>
-                <Text style={styles.ratingText}>({movie.vote_count} votos)</Text>
+                <Text style={styles.ratingText}> ({movie.vote_count} votos)</Text>
               </View>
             </View>
           </View>
@@ -73,21 +81,21 @@ export const MovieDetailsScreen: React.FC<MovieDetailsScreenProps> = ({ navigati
           {movieDetails?.genres && (
             <View style={styles.genresContainer}>
               {movieDetails.genres.map((genre) => (
-                <View key={genre.id} style={styles.genreTag}>
-                  <Text style={styles.genreText}>{genre.name}</Text>
+                <View key={genre.id} style={[styles.genreTag, { backgroundColor: theme.colors.surfaceVariant }]}>
+                  <Text style={[styles.genreText, { color: theme.colors.text }]}>{genre.name}</Text>
                 </View>
               ))}
             </View>
           )}
 
           {movieDetails?.runtime && (
-            <Text style={styles.runtime}>{movieDetails.runtime} min</Text>
+            <Text style={[styles.runtime, { color: theme.colors.textSecondary }]}>{movieDetails.runtime} min</Text>
           )}
 
-          <Text style={styles.overview}>{movie.overview}</Text>
+          <Text style={[styles.overview, { color: theme.colors.text }]}>{movie.overview}</Text>
 
           {movieDetails?.tagline && (
-            <Text style={styles.tagline}>"{movieDetails.tagline}"</Text>
+            <Text style={[styles.tagline, { color: theme.colors.textSecondary }]}>"{movieDetails.tagline}"</Text>
           )}
           
           <ReviewsSection movieId={initialMovie.id} />
@@ -100,13 +108,11 @@ export const MovieDetailsScreen: React.FC<MovieDetailsScreenProps> = ({ navigati
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#14171F',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#14171F',
   },
   header: {
     position: 'relative',
@@ -125,16 +131,20 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   backButton: {
     position: 'absolute',
     top: 50,
     left: 16,
     zIndex: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: 20,
     padding: 8,
+  },
+  themeToggleContainer: {
+    position: 'absolute',
+    top: 50,
+    right: 16,
+    zIndex: 10,
   },
   headerContent: {
     position: 'absolute',
@@ -173,7 +183,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#fff',
   },
   content: {
     padding: 16,
@@ -184,7 +193,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   genreTag: {
-    backgroundColor: '#2D2D35',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
@@ -193,24 +201,20 @@ const styles = StyleSheet.create({
   },
   genreText: {
     fontSize: 12,
-    color: '#fff',
   },
   runtime: {
     fontSize: 14,
-    color: '#fff',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   overview: {
     fontSize: 16,
     lineHeight: 24,
-    color: '#fff',
     marginBottom: 16,
   },
   tagline: {
     fontSize: 14,
     fontStyle: 'italic',
-    color: '#fff',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 16,
   },
 }); 
