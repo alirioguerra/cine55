@@ -39,17 +39,17 @@ export const MovieDetailsScreen: React.FC<MovieDetailsScreenProps> = ({ navigati
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="arrow-back" size={24} color="#fff" />
+      </TouchableOpacity>
+
       <ScrollView>
         <View style={styles.header}>
           <Image source={{ uri: backdropUrl }} style={styles.backdrop} />
           <View style={styles.backdropOverlay} />
-          
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="arrow-back" size={24} color="#fff" />
-          </TouchableOpacity>
 
           <View style={styles.headerContent}>
             <Image
