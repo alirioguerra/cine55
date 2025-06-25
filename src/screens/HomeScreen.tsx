@@ -1,9 +1,11 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   StyleSheet,
-  ActivityIndicator,
   Text,
+  FlatList,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { HomeScreenNavigationProp } from '../types/navigation';
@@ -11,7 +13,7 @@ import { Movie } from '../types/movie';
 import { SearchBar } from '../components/SearchBar';
 import { GenreFilter } from '../components/GenreFilter';
 import { OfflineMessage } from '../components/OfflineMessage';
-import { MoviesList } from '../components/MoviesList';
+import { MovieCard } from '../components/MovieCard';
 import { useNetworkStatus } from '../composables/useNetworkStatus';
 import { usePopularMovies, useSearchMovies, useMoviesByGenre, useGenres } from '../composables/useMovies';
 
@@ -20,123 +22,83 @@ interface HomeScreenProps {
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
-  const [allMovies, setAllMovies] = useState<Movie[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState(searchQuery);
   const [selectedGenre, setSelectedGenre] = useState<number | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasMorePages, setHasMorePages] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const isConnected = useNetworkStatus();
 
-  // React Query hooks
   const { data: genresData } = useGenres();
-  const { data: popularData, isLoading: popularLoading, refetch: refetchPopular } = usePopularMovies(currentPage);
-  const { data: searchData, isLoading: searchLoading } = useSearchMovies(debouncedQuery, currentPage);
-  const { data: genreData, isLoading: genreLoading, refetch: refetchGenre } = useMoviesByGenre(selectedGenre, currentPage);
+  const popularMovies = usePopularMovies();
+  const searchMovies = useSearchMovies(searchQuery);
+  const genreMovies = useMoviesByGenre(selectedGenre);
 
-  // Memoized genres array
+  const currentQuery = useMemo(() => {
+    if (searchQuery.trim().length > 2) return searchMovies;
+    if (selectedGenre) return genreMovies;
+    return popularMovies;
+  }, [searchQuery, selectedGenre, searchMovies, genreMovies, popularMovies]);
+
+  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, refetch, isError } = currentQuery;
+  
+  const movies = useMemo(() => {
+    return data?.pages?.flatMap(page => page.results) || [];
+  }, [data?.pages]);
+
   const genres = useMemo(() => genresData?.genres || [], [genresData?.genres]);
 
-  // Memoized data and loading states
-  const currentData = useMemo(() => {
-    if (searchQuery.trim()) {
-      return searchData;
-    } else if (selectedGenre) {
-      return genreData;
-    } else {
-      return popularData;
-    }
-  }, [searchQuery, selectedGenre, searchData, genreData, popularData]);
-
-  const isLoading = useMemo(() => {
-    if (searchQuery.trim()) {
-      return searchLoading;
-    } else if (selectedGenre) {
-      return genreLoading;
-    } else {
-      return popularLoading;
-    }
-  }, [searchQuery, selectedGenre, searchLoading, genreLoading, popularLoading]);
-
-  // Atualizar filmes quando dados chegarem
-  useEffect(() => {
-    if (currentData) {
-      if (currentPage === 1) {
-        setAllMovies(currentData.results);
-        if (isInitialLoad) {
-          setIsInitialLoad(false);
-        }
-      } else {
-        // Evitar duplicatas ao adicionar novos filmes
-        setAllMovies(prev => {
-          const existingIds = new Set(prev.map(movie => movie.id));
-          const newMovies = currentData.results.filter(movie => !existingIds.has(movie.id));
-          return [...prev, ...newMovies];
-        });
-      }
-      setHasMorePages(currentPage < currentData.total_pages);
-      setLoadingMore(false);
-    }
-  }, [currentData, currentPage, isInitialLoad]);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedQuery(searchQuery);
-    }, 500);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [searchQuery]);
-
-  useEffect(() => {
-    setAllMovies([]);
-    setCurrentPage(1);
-    setHasMorePages(true);
-  }, [debouncedQuery]);  
-
-  // Resetar quando mudar gênero
-  useEffect(() => {
-    if (selectedGenre !== null) {
-      setAllMovies([]);
-      setCurrentPage(1);
-      setHasMorePages(true);
-    }
-  }, [selectedGenre]);
-
-  const handleSearch = useCallback((query: string) => {
-    setSearchQuery(query);
-  }, []);
-
-  const handleGenreSelect = useCallback((genreId: number | null) => {
-    setSelectedGenre(genreId);
-  }, []);
-
-  const handleMoviePress = useCallback((movie: Movie) => {
+  const handleMoviePress = (movie: Movie) => {
     navigation.navigate('MovieDetails', { movie });
-  }, [navigation]);
+  };
 
-  const handleLoadMore = useCallback(() => {
-    if (hasMorePages && !loadingMore && !isLoading) {
-      setLoadingMore(true);
-      setCurrentPage(prev => prev + 1);
+  const handleLoadMore = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
     }
-  }, [hasMorePages, loadingMore, isLoading]);
+  };
 
-  const handleRefresh = useCallback(async () => {
-    setAllMovies([]);
-    setCurrentPage(1);
-    setHasMorePages(true);
-    if (searchQuery.trim()) {
-      // Para busca, não há refetch específico
-    } else if (selectedGenre) {
-      refetchGenre();
-    } else {
-      refetchPopular();
+  const renderMovie = ({ item }: { item: Movie }) => (
+    <MovieCard movie={item} onPress={handleMoviePress} />
+  );
+
+  const renderFooter = () => {
+    if (!isFetchingNextPage) return null;
+    return (
+      <View style={styles.loadingMore}>
+        <ActivityIndicator size="small" color="#007AFF" />
+        <Text style={styles.loadingMoreText}>Carregando mais...</Text>
+      </View>
+    );
+  };
+
+  const renderEmpty = () => {
+    if (isLoading) {
+      return (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#007AFF" />
+          <Text style={styles.loadingText}>
+            {searchQuery ? 'Buscando filmes...' : 'Carregando filmes...'}
+          </Text>
+        </View>
+      );
     }
-  }, [searchQuery, selectedGenre, refetchGenre, refetchPopular]);
+
+    if (isError) {
+      return (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>
+            Erro ao carregar filmes. Tente novamente.
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>
+          {searchQuery ? 'Nenhum filme encontrado para sua busca.' : 'Nenhum filme disponível.'}
+        </Text>
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -148,27 +110,35 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       </View>
 
       <SearchBar 
-        onSearch={handleSearch}
+        onSearch={setSearchQuery}
         value={searchQuery}
-        onValueChange={handleSearch}
+        onValueChange={setSearchQuery}
       />
 
       <GenreFilter
         genres={genres}
         selectedGenre={selectedGenre}
-        onGenreSelect={handleGenreSelect}
+        onGenreSelect={setSelectedGenre}
       />
 
-      <MoviesList
-        movies={allMovies}
-        isLoading={isLoading}
-        loadingMore={loadingMore}
-        hasMorePages={hasMorePages}
-        searchQuery={searchQuery}
-        isInitialLoad={isInitialLoad}
-        onLoadMore={handleLoadMore}
-        onRefresh={handleRefresh}
-        onMoviePress={handleMoviePress}
+      <FlatList
+        data={movies}
+        keyExtractor={(item) => `${item.id}-${item.title}`}
+        renderItem={renderMovie}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
+        contentContainerStyle={styles.listContent}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.1}
+        refreshControl={
+          <RefreshControl 
+            refreshing={isLoading && !isFetchingNextPage} 
+            onRefresh={refetch}
+            tintColor="#007AFF"
+          />
+        }
+        ListFooterComponent={renderFooter}
+        ListEmptyComponent={renderEmpty}
       />
     </SafeAreaView>
   );
@@ -192,5 +162,45 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: '#fff',
+  },
+  row: {
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+  },
+  listContent: {
+    paddingBottom: 20,
+  },
+  loadingMore: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 16,
+  },
+  loadingMoreText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#fff',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#fff',
+    textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#fff',
+    textAlign: 'center',
   },
 }); 

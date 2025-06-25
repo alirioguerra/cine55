@@ -13,18 +13,13 @@ export class MovieApiService {
   private static async fetchApi<T>(endpoint: string): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}&api_key=${API_KEY}&language=pt-BR`;
     
-    try {
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        throw new Error(`API request failed: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      throw error;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status}`);
     }
+    
+    return response.json();
   }
 
   static async getPopularMovies(page: number = 1): Promise<ApiResponse<Movie>> {
@@ -40,7 +35,8 @@ export class MovieApiService {
   }
 
   static async searchMovies(query: string, page: number = 1): Promise<ApiResponse<Movie>> {
-    return this.fetchApi<ApiResponse<Movie>>(`/search/movie?query=${encodeURIComponent(query)}&page=${page}`);
+    const encodedQuery = encodeURIComponent(query.trim());
+    return this.fetchApi<ApiResponse<Movie>>(`/search/movie?query=${encodedQuery}&page=${page}`);
   }
 
   static async getMoviesByGenre(genreId: number, page: number = 1): Promise<ApiResponse<Movie>> {

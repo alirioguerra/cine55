@@ -69,6 +69,7 @@ export const GenreFilter = memo(GenreFilterComponent);
 const styles = StyleSheet.create({
   container: {
     marginVertical: 8,
+    marginBottom: 16,
   },
   title: {
     fontSize: 16,
