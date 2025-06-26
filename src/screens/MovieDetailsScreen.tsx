@@ -7,6 +7,8 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -41,25 +43,28 @@ export const MovieDetailsScreen: React.FC<MovieDetailsScreenProps> = ({ navigati
   const backdropUrl = MovieApiService.getBackdropUrl(movie.backdrop_path);
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <TouchableOpacity
-        style={[styles.backButton, { backgroundColor: theme.colors.backdrop }]}
-        onPress={() => navigation.goBack()}
-      >
-        <Ionicons name="arrow-back" size={24} color="#fff" />
-      </TouchableOpacity>
-
+    <KeyboardAvoidingView 
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+      behavior={Platform.OS === 'ios' ? 'position' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
       <ScrollView>
         <View style={styles.header}>
+          <TouchableOpacity
+            style={[styles.backButton, { backgroundColor: theme.colors.backdrop }]}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="arrow-back" size={24} color="#fff" />
+          </TouchableOpacity>
+          
           <View style={styles.themeToggleContainer}>
             <ThemeToggle />
           </View>
+          
           <Image source={{ uri: backdropUrl }} style={styles.backdrop} />
           <View style={[styles.backdropOverlay, { backgroundColor: theme.colors.backdrop }]} />
 
           <View style={styles.headerContent}>
-            <View style={styles.themeToggleContainer}>
-            </View>
             <Image
               source={{ uri: MovieApiService.getPosterUrl(movie.poster_path) }}
               style={styles.poster}
@@ -101,7 +106,7 @@ export const MovieDetailsScreen: React.FC<MovieDetailsScreenProps> = ({ navigati
           <ReviewsSection movieId={initialMovie.id} />
         </View>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
